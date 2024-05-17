@@ -1,0 +1,53 @@
+// Vender In stock selling product
+function get_vendor_in_stock_products() {
+    // Check if we're on a Dokan store page and get the vendor ID
+    if ( function_exists( 'dokan_is_store_page' ) && dokan_is_store_page() ) {
+        $store_user = get_query_var( 'author' );
+        $vendor = dokan()->vendor->get( $store_user );
+
+        // Get the vendor's products that are in stock
+        $args = array(
+            'post_type'      => 'product',
+            'posts_per_page' => -1,
+            'author'         => $vendor->get_id(),
+            'post_status'    => 'publish',
+            'meta_query'     => array(
+                array(
+                    'key'     => '_stock_status',
+                    'value'   => 'instock',
+                    'compare' => '=',
+                ),
+            ),
+        );
+
+        $products = get_posts( $args );
+
+        // Gather product details
+        $output = '<div class="vendor-in-stock-products">';
+
+        foreach ( $products as $product ) {
+            $product_id = $product->ID;
+            $product_image = get_the_post_thumbnail( $product_id, 'thumbnail' );
+            $product_title = get_the_title( $product_id );
+            $product_price = wc_get_price_to_display( wc_get_product( $product_id ) );
+            $product_link = get_permalink( $product_id );
+
+            $output .= '<div class="in-stock-product">';
+            $output .= '<div class="product-image"><a href="' . esc_url( $product_link ) . '">' . $product_image . '</a></div>';
+            $output .= '<div class="product-title"><a href="' . esc_url( $product_link ) . '">' . esc_html( $product_title ) . '</a></div>';
+            $output .= '<div class="product-price">' . wc_price( $product_price ) . '</div>';
+            $output .= '</div>';
+        }
+
+        $output .= '</div>';
+
+        return $output;
+    }
+
+    return __('No vendor found', 'dokan-lite');
+}
+
+function register_vendor_in_stock_products_shortcode() {
+    add_shortcode( 'vendor_in_stock_products', 'get_vendor_in_stock_products' );
+}
+add_action( 'init', 'register_vendor_in_stock_products_shortcode' );
