@@ -1,0 +1,31 @@
+// Dokan Vendor Biography Shortcode
+
+add_shortcode( 'dokan_vendor_bio', 'dokan_vendor_bio_shortcode' );
+function dokan_vendor_bio_shortcode() {
+	$vendor = dokan()->vendor->get( get_query_var( 'author' ) );
+	$store_info = $vendor->get_shop_info();
+	if ( empty( $store_info['vendor_biography'] ) ) {
+		return;
+	}
+	printf( '%s', apply_filters( 'the_content', $store_info['vendor_biography'] ) );
+}
+
+
+// user vendor bio shortcode on single product page 
+
+add_shortcode( 'dokan_vendor_bio_single', 'dokan_vendor_bio_shortcode_single' );
+function dokan_vendor_bio_shortcode_single() {
+global $product;
+$seller = get_post_field( 'post_author', $product->get_id());
+$author = get_user_by( 'id', $seller );
+$vendor = dokan()->vendor->get( $seller );
+
+ $store_info = dokan_get_store_info( $author->ID );
+
+ if ( !empty( $store_info['vendor_biography'] ) ) { ?>
+     <span class="details">
+             <?php printf( $vendor->get_vendor_biography() ); ?>
+         </span> 
+     <?php
+ }
+}
