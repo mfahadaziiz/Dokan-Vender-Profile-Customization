@@ -1,0 +1,26 @@
+// Number of Followers
+function get_vendor_followers_count() {
+    // Check if we're on a Dokan store page and get the vendor ID
+    if ( function_exists( 'dokan_is_store_page' ) && dokan_is_store_page() ) {
+        $store_user = get_query_var( 'author' );
+        $vendor = dokan()->vendor->get( $store_user );
+
+        // Assuming follower count is stored as user meta
+        $followers_count = get_user_meta( $vendor->get_id(), '_dokan_followers_count', true );
+
+        // If no followers count is set, default to 0
+        if ( empty( $followers_count ) ) {
+            $followers_count = 0;
+        }
+
+        // Output the followers count
+        return sprintf( __('Followers: %d', 'dokan-lite'), $followers_count );
+    }
+
+    return __('No vendor found', 'dokan-lite');
+}
+
+function register_vendor_followers_count_shortcode() {
+    add_shortcode( 'vendor_followers_count', 'get_vendor_followers_count' );
+}
+add_action( 'init', 'register_vendor_followers_count_shortcode' );
